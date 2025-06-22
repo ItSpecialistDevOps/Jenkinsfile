@@ -2,33 +2,45 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub') // Jenkins ID of Docker Hub credentials
-        DOCKER_IMAGE = 'devopsabhishekh/frontend-angular-19'
+        DOCKERHUB_CREDENTIALS = 'docker-hub'  // Jenkins credentials ID
+        IMAGE_NAME = 'devopsabhishekh/frontend-angular-19'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout Repo') {
             steps {
-                git 'https://github.com/YourGitHubUsername/frontend-angular-19.git'
+                git branch: 'main', url: 'https://github.com/YourGitHubUsername/frontend-angular-19.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}:latest")
+                    docker.build("${IMAGE_NAME}", '.')
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Login to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_HUB_CREDENTIALS) {
-                        docker.image("${DOCKER_IMAGE}:latest").push()
-                    }
+                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin'
                 }
             }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.image("${IMAGE_NAME}").push('latest')
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
