@@ -35,9 +35,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    docker.image("${IMAGE_NAME}").push('latest')
-                }
+                sh 'docker push devopsabhishekh/frontend-angular-19:latest'
             }
         }
     }
