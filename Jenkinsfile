@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'docker-hub'  // Jenkins credentials ID
+        DOCKERHUB_CREDENTIALS = 'dockerhub-creds-id'
         IMAGE_NAME = 'devopsabhishekh/frontend-angular-19'
     }
 
@@ -15,8 +15,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}", '.')
+                dir('frontend-angular-19') {
+                    script {
+                        docker.build("${IMAGE_NAME}", '.')
+                    }
                 }
             }
         }
